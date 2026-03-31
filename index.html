@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow Pro | Workspace</title>
+
+    <!-- Preconnect to Google Fonts CDN so the TCP handshake is done before CSS arrives -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- font-display=swap: text renders immediately in a fallback font, swaps when Inter loads -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-wrapper">
+        
+        <div class="sidebar">
+            <div class="logo-section">
+                <span class="material-icons-round logo-icon">task_alt</span>
+                <h2>TaskFlow</h2>
+            </div>
+
+            <div class="nav-links">
+                <button class="nav-btn active" data-filter="all">
+                    <span class="material-icons-round">dashboard</span> All Tasks
+                </button>
+                <button class="nav-btn" data-filter="today">
+                    <span class="material-icons-round">today</span> Today
+                </button>
+                <button class="nav-btn" data-filter="important">
+                    <span class="material-icons-round">star</span> Important
+                </button>
+                <button class="nav-btn" data-filter="completed">
+                    <span class="material-icons-round">done_all</span> Completed
+                </button>
+            </div>
+
+            <div class="nav-footer">
+                <div class="theme-toggle" id="theme-toggle">
+                    <span class="material-icons-round">dark_mode</span>
+                    <span>Dark Mode</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            
+            <div class="top-bar">
+                <div class="welcome-text">
+                    <h1 id="page-title">Dashboard</h1>
+                    <p id="date-display">Today is ...</p>
+                </div>
+                
+                <div class="header-actions">
+                    <button id="bulk-delete-btn" class="btn-danger hidden">
+                        <span class="material-icons-round">delete</span> Delete (<span id="selected-count">0</span>)
+                    </button>
+
+                    <div class="search-box">
+                        <span class="material-icons-round">search</span>
+                        <input type="text" id="search-input" placeholder="Search tasks...">
+                    </div>
+                    <button class="add-task-btn" id="add-task-btn">
+                        <span class="material-icons-round">add</span> New Task
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><span class="material-icons-round">assignment</span></div>
+                    <div class="stat-info">
+                        <h3>Total</h3>
+                        <span id="stat-total">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><span class="material-icons-round">pending_actions</span></div>
+                    <div class="stat-info">
+                        <h3>Pending</h3>
+                        <span id="stat-pending">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><span class="material-icons-round">check_circle</span></div>
+                    <div class="stat-info">
+                        <h3>Completed</h3>
+                        <span id="stat-completed">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tasks-container">
+                <div class="list-header">
+                    <div class="list-header-left">
+                        <h3>My Tasks</h3>
+                        <div class="select-all-wrapper">
+                            <input type="checkbox" id="select-all-checkbox">
+                            <label for="select-all-checkbox">Select All</label>
+                        </div>
+                    </div>
+                    
+                    <select id="sort-select">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="priority">Priority (High-Low)</option>
+                        <option value="date">Due Date</option>
+                    </select>
+                </div>
+                
+                <div id="empty-state" class="empty-state hidden">
+                    <span class="material-icons-round">post_add</span>
+                    <p>No tasks found. Add one to get started!</p>
+                </div>
+
+                <ul id="task-list" class="task-list"></ul>
+
+                <div id="completed-section" class="hidden">
+                    <h4 class="separator-title">Completed</h4>
+                    <ul id="completed-task-list" class="task-list"></ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="task-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Create New Task</h2>
+                <button id="close-modal-btn" class="close-btn"><span class="material-icons-round">close</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="task-form">
+                    <input type="hidden" id="task-id">
+                    
+                    <div class="form-group">
+                        <label>Task Title</label>
+                        <input type="text" id="input-title" placeholder="e.g., Submit Project Report" required>
+                        <span class="error-message hidden" id="error-title">Title is required</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description (Optional)</label>
+                        <textarea id="input-desc" rows="3" placeholder="Add details..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Due Date</label>
+                            <input type="date" id="input-date" required>
+                            <span class="error-message hidden" id="error-date">Date is required</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Time</label>
+                            <input type="time" id="input-time" required>
+                            <span class="error-message hidden" id="error-time">Time is required</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <div class="priority-selector">
+                            <input type="radio" name="priority" value="low" id="p-low"> <label for="p-low" class="p-badge low">Low</label>
+                            <input type="radio" name="priority" value="medium" id="p-med" checked> <label for="p-med" class="p-badge medium">Medium</label>
+                            <input type="radio" name="priority" value="high" id="p-high"> <label for="p-high" class="p-badge high">High</label>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" id="cancel-btn">Cancel</button>
+                        <button type="submit" class="btn-save" id="save-btn">Save Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">Task Added Successfully</div>
+
+    <!-- EmailJS SDK for email notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+    <!-- defer: HTML parses fully first, then script runs — no render blocking -->
+    <script src="script.js" defer></script>
+</body>
+</html>
