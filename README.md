@@ -3,4 +3,4 @@ Live at https://devregan.github.io/ToDO-List/
 https://devregan.github.io/ToDO-List/
 ```
 
-HTTPS ```bash https://github.com/devRegan/ToDO-List.git ```
+HTTPS ```hash https://github.com/devRegan/ToDO-List.git ```
