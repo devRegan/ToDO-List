@@ -9,7 +9,4 @@ https://devregan.github.io/ToDO-List/
 https://github.com/devRegan/ToDO-List.git
 ```
 
-### Email JS
-```bash
-https://www.emailjs.com/
-```
+### Email JS https://www.emailjs.com/
