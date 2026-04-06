@@ -1,4 +1,4 @@
-/* --- EMAILJS CONFIG --- */
+// Emailjs config
 const EMAILJS_SERVICE_ID  = '';
 const EMAILJS_TEMPLATE_ID = '';
 const EMAILJS_PUBLIC_KEY  = '';
@@ -12,11 +12,11 @@ let editingId = null;
 let selectedTasks = new Set();
 let isDirty = false;
 
-/* Debounce timers */
+// Debounce timers
 let searchDebounceTimer = null;
 let saveDebounceTimer = null;
 
-/* Cached today string — recomputed at midnight only */
+// Cached today string — recomputed at midnight only
 let todayStr = new Date().toISOString().split('T')[0];
 const msUntilMidnight = 86400000 - (Date.now() % 86400000);
 setTimeout(function refreshDay() {
@@ -24,15 +24,14 @@ setTimeout(function refreshDay() {
     setTimeout(refreshDay, 86400000);
 }, msUntilMidnight);
 
-/* Cached DOM refs — looked up once, reused everywhere */
+// Cached dom refs — looked up once, reused everywhere
 const DOM = {};
 
-/* Priority sort weights — defined once, not inside sort() */
+// Priority sort weights — defined once, not inside sort()
 const PRIORITY_WEIGHT = { high: 3, medium: 2, low: 1 };
 
-/* --- INITIALIZATION --- */
+// Initialization
 document.addEventListener('DOMContentLoaded', () => {
-    /* Cache all frequently accessed DOM nodes up front */
     DOM.taskList        = document.getElementById('task-list');
     DOM.completedList   = document.getElementById('completed-task-list');
     DOM.completedSection= document.getElementById('completed-section');
@@ -59,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     DOM.errorDate       = document.getElementById('error-date');
     DOM.errorTime       = document.getElementById('error-time');
 
-    /* Normalise titles of any pre-existing tasks loaded from storage */
     tasks.forEach(t => { if (!t.titleLower) t.titleLower = t.title.toLowerCase(); });
 
     renderTasks();
@@ -71,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initEmailJS();
 });
 
-/* --- EVENT LISTENERS SETUP --- */
+// Event listeners setup
 function setupEventListeners() {
     document.querySelector('.nav-links').addEventListener('click', (e) => {
         const btn = e.target.closest('.nav-btn');
@@ -83,7 +81,7 @@ function setupEventListeners() {
     DOM.searchInput.addEventListener('input', (e) => {
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
-            searchQuery = e.target.value.toLowerCase(); /* normalise once here */
+            searchQuery = e.target.value.toLowerCase();
             renderTasks();
         }, 300);
     });
@@ -102,12 +100,12 @@ function setupEventListeners() {
     DOM.modal.addEventListener('click', (e) => { if (e.target.id === 'task-modal') closeModal(); });
     DOM.taskForm.addEventListener('submit', (e) => { e.preventDefault(); saveTask(); });
 
-    /* Single delegated listener covers both lists */
+    // Single delegated listener covers both lists
     DOM.taskList.addEventListener('click', handleTaskAction);
     DOM.completedList.addEventListener('click', handleTaskAction);
 }
 
-/* --- EVENT DELEGATION FOR TASK ACTIONS --- */
+// Event delegation for task actions
 function handleTaskAction(e) {
     const taskItem = e.target.closest('.task-item');
     if (!taskItem) return;
@@ -129,7 +127,7 @@ function handleTaskAction(e) {
     }
 }
 
-/* --- MAIN FUNCTIONS --- */
+// Main functions
 
 function saveTask() {
     const title = DOM.inputTitle.value.trim();
@@ -139,7 +137,6 @@ function saveTask() {
     const priorityInput = document.querySelector('input[name="priority"]:checked');
     const priority = priorityInput ? priorityInput.value : 'medium';
 
-    /* Clear previous errors */
     DOM.errorTitle.classList.add('hidden');
     DOM.errorDate.classList.add('hidden');
     DOM.errorTime.classList.add('hidden');
@@ -159,7 +156,7 @@ function saveTask() {
     const taskObj = {
         id: editingId || Date.now(),
         title,
-        titleLower: title.toLowerCase(), /* pre-normalised for fast search */
+        titleLower: title.toLowerCase(),
         desc,
         dueDate: date,
         dueTime: time,
@@ -213,7 +210,7 @@ function toggleComplete(id) {
     }
 }
 
-/* Surgically update a single task node — no full re-render */
+// Surgically update a single task node — no full re-render
 function updateTaskInDOM(id, task) {
     const taskItem = document.querySelector(`.task-item[data-task-id="${id}"]`);
     if (!taskItem) { renderTasks(); return; }
@@ -237,7 +234,7 @@ function updateTaskInDOM(id, task) {
     }
 }
 
-/* --- BULK ACTIONS --- */
+// Bulk actions
 
 function toggleSelection(id) {
     if (selectedTasks.has(id)) {
@@ -258,7 +255,6 @@ function toggleSelection(id) {
     updateBulkActionUI();
 }
 
-/* Patch checkboxes in-place — no full re-render needed */
 function toggleSelectAll(isChecked) {
     const visibleTasks = getFilteredTasks();
 
@@ -268,7 +264,6 @@ function toggleSelectAll(isChecked) {
         selectedTasks.clear();
     }
 
-    /* Update only the visual state of existing DOM nodes */
     document.querySelectorAll('.task-item').forEach(el => {
         const id = parseInt(el.dataset.taskId, 10);
         const isSelected = selectedTasks.has(id);
@@ -300,14 +295,14 @@ function updateBulkActionUI() {
     DOM.bulkDeleteBtn.classList.toggle('hidden', selectedTasks.size === 0);
 }
 
-/* --- RENDERING --- */
+// Rendering
 
 function getFilteredTasks() {
     let filtered;
 
-    /* Single-pass filter — no chained .filter() calls */
+    // Single-pass filter — no chained .filter() calls
     if (currentFilter === 'all' && !searchQuery) {
-        filtered = tasks.slice(); /* cheap copy, no predicate cost */
+        filtered = tasks.slice();
     } else {
         filtered = tasks.filter(t => {
             switch (currentFilter) {
@@ -320,7 +315,7 @@ function getFilteredTasks() {
         });
     }
 
-    /* Sort — timestamps pre-computed to avoid repeated Date construction */
+    // Sort — timestamps pre-computed to avoid repeated date construction
     filtered.sort((a, b) => {
         switch (sortBy) {
             case 'newest':   return b.id - a.id;
@@ -348,7 +343,6 @@ function renderTasks() {
 
     DOM.emptyState.classList.add('hidden');
 
-    /* Build HTML strings — one innerHTML write per list, not per task */
     let activeHTML = '';
     let completedHTML = '';
     let completedCount = 0;
@@ -371,7 +365,6 @@ function renderTasks() {
     updateBulkActionUI();
 }
 
-/* Pure string template — zero DOM creation per task */
 function taskTemplate(task) {
     const isSelected  = selectedTasks.has(task.id);
     const isCompleted = task.completed;
@@ -411,7 +404,7 @@ function taskTemplate(task) {
     </li>`;
 }
 
-/* --- HELPERS --- */
+// Helpers
 
 function updateStats() {
     let completed = 0;
@@ -421,13 +414,13 @@ function updateStats() {
     const total   = tasks.length;
     const pending = total - completed;
 
-    /* Only write to DOM if value actually changed — avoids layout thrash */
+    // Only write to dom if value actually changed — avoids layout thrash
     if (DOM.statTotal.textContent     !== String(total))     DOM.statTotal.textContent     = total;
     if (DOM.statPending.textContent   !== String(pending))   DOM.statPending.textContent   = pending;
     if (DOM.statCompleted.textContent !== String(completed)) DOM.statCompleted.textContent = completed;
 }
 
-/* Mark data dirty and schedule a debounced save */
+// Mark data dirty and schedule a debounced save
 function markDirty() {
     isDirty = true;
     clearTimeout(saveDebounceTimer);
@@ -443,7 +436,7 @@ function setupDate() {
     document.getElementById('date-display').textContent = new Date().toLocaleDateString('en-US', options);
 }
 
-/* Reuse a single div node for HTML escaping — no allocation per call */
+// Reuse a single div node for html escaping — no allocation per call
 const _escDiv = document.createElement('div');
 function escapeHtml(text) {
     _escDiv.textContent = text;
@@ -462,10 +455,9 @@ function showToast(msg, isConfirm = false, onConfirm = null) {
     toastTimer = setTimeout(() => DOM.toast.classList.add('hidden'), 3000);
 }
 
-/* --- UI --- */
+// Ui
 
 function openModal(id = null) {
-    /* Clear errors */
     DOM.errorTitle.classList.add('hidden');
     DOM.errorDate.classList.add('hidden');
     DOM.errorTime.classList.add('hidden');
@@ -488,7 +480,7 @@ function openModal(id = null) {
         editingId = null;
         DOM.modalTitle.textContent = "Create New Task";
         DOM.taskForm.reset();
-        DOM.inputDate.value = todayStr; /* reuse cached string */
+        DOM.inputDate.value = todayStr; 
     }
 
     DOM.modal.classList.remove('hidden');
@@ -525,14 +517,14 @@ function toggleTheme() {
     }
 }
 
-/* Load saved theme before first paint — IIFE runs synchronously */
+// Load saved theme before first paint — iife runs synchronously
 (() => {
     if (localStorage.getItem('theme') === 'dark') {
         document.body.setAttribute('data-theme', 'dark');
     }
 })();
 
-/* --- EXTRAS --- */
+// Extras
 
 function addToCalendar(id) {
     const task = tasks.find(t => t.id === id);
@@ -552,12 +544,11 @@ function requestNotificationPermission() {
     }
 }
 
-/* checkReminders — builds comparison string once per call, not per task */
+// Checkreminders — builds comparison string once per call, not per task
 function checkReminders() {
     const now = new Date();
     const currentString = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
-    /* Timestamp 24 hours from now (ms), used for deadline warning window */
     const in24h = now.getTime() + 24 * 60 * 60 * 1000;
 
     for (let i = 0; i < tasks.length; i++) {
@@ -566,12 +557,10 @@ function checkReminders() {
 
         const dueTimestamp = Date.parse(`${t.dueDate}T${t.dueTime}`);
 
-        /* Exact-minute in-app notification (existing behaviour) */
         if (`${t.dueDate} ${t.dueTime}` === currentString) {
             sendNotification(t);
         }
 
-        /* 24-hour deadline warning email — fire once per task */
         if (!t.notifiedDeadline && dueTimestamp > now.getTime() && dueTimestamp <= in24h) {
             t.notifiedDeadline = true;
             markDirty();
@@ -589,7 +578,7 @@ function sendNotification(task) {
     }
 }
 
-/* --- EMAILJS NOTIFICATION SYSTEM --- */
+// Emailjs notification system
 
 function initEmailJS() {
     if (typeof emailjs !== 'undefined') {
@@ -597,10 +586,7 @@ function initEmailJS() {
     }
 }
 
-/**
- * sendEmailNotification
- * type: 'created' | 'completed' | 'deadline'
- */
+// Sendemailnotification type: 'created' | 'completed' | 'deadline'
 function sendEmailNotification(type, task) {
     if (typeof emailjs === 'undefined') return;
 
